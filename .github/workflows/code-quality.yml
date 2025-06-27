@@ -34,31 +34,43 @@ jobs:
     - name: TypeScript Type Check
       id: typecheck
       run: |
-        if npm run typecheck 2>&1 | tee typecheck.log; then
+        set +e  # Don't exit on error
+        npm run typecheck 2>&1 | tee typecheck.log
+        TYPECHECK_EXIT_CODE=$?
+        if [ $TYPECHECK_EXIT_CODE -eq 0 ]; then
           echo "typecheck_status=success" >> $GITHUB_OUTPUT
         else
           echo "typecheck_status=failed" >> $GITHUB_OUTPUT
         fi
+        set -e  # Re-enable exit on error
       continue-on-error: true
       
     - name: ESLint Check
       id: lint
       run: |
-        if npm run lint 2>&1 | tee lint.log; then
+        set +e  # Don't exit on error
+        npm run lint 2>&1 | tee lint.log
+        LINT_EXIT_CODE=$?
+        if [ $LINT_EXIT_CODE -eq 0 ]; then
           echo "lint_status=success" >> $GITHUB_OUTPUT
         else
           echo "lint_status=failed" >> $GITHUB_OUTPUT
         fi
+        set -e  # Re-enable exit on error
       continue-on-error: true
       
     - name: Run Tests
       id: test
       run: |
-        if npm run test 2>&1 | tee test.log; then
+        set +e  # Don't exit on error
+        npm run test 2>&1 | tee test.log
+        TEST_EXIT_CODE=$?
+        if [ $TEST_EXIT_CODE -eq 0 ]; then
           echo "test_status=success" >> $GITHUB_OUTPUT
         else
           echo "test_status=failed" >> $GITHUB_OUTPUT
         fi
+        set -e  # Re-enable exit on error
       continue-on-error: true
       
     - name: Check for TODO/FIXME comments
@@ -73,14 +85,19 @@ jobs:
     - name: Check for console.log statements
       id: console_check
       run: |
-        if grep -r "console\." --include="*.ts" --include="*.js" --exclude-dir=node_modules . 2>&1 | tee console.log; then
+        set +e  # Don't exit on error
+        grep -r "console\." --include="*.ts" --include="*.js" --exclude-dir=node_modules . > console.log 2>&1
+        CONSOLE_EXIT_CODE=$?
+        if [ $CONSOLE_EXIT_CODE -eq 0 ]; then
           echo "⚠️  Found console statements in code"
           echo "console_status=failed" >> $GITHUB_OUTPUT
-          exit 1
+          # Add line numbers to console.log for better debugging
+          grep -rn "console\." --include="*.ts" --include="*.js" --exclude-dir=node_modules . >> console.log 2>&1 || true
         else
           echo "✅ No console statements found" | tee console.log
           echo "console_status=success" >> $GITHUB_OUTPUT
         fi
+        set -e  # Re-enable exit on error
       continue-on-error: true
         
     - name: Create Error Summary Issue
