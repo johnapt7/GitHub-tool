@@ -1,7 +1,7 @@
 import { WorkflowDefinition, ExecutionContext, ActionResult } from '../types/workflow-schema';
 import { ExecutionResult } from './workflow-engine';
 import prisma from '../config/database';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export interface ExecutionSnapshot {
   executionId: string;

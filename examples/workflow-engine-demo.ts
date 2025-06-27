@@ -1,7 +1,7 @@
 import { WorkflowService } from '../services/workflow-service';
 import { WorkflowDefinition } from '../types/workflow-schema';
 import { criticalIssueWorkflow, prReviewWorkflow } from './workflow-examples';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 /**
  * Comprehensive demonstration of the Workflow Engine

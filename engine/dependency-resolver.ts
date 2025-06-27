@@ -1,5 +1,5 @@
 import { ActionConfig } from '../types/workflow-schema';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export interface ExecutionStage {
   stage: number;

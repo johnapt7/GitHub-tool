@@ -14,7 +14,7 @@ import { DependencyResolver } from './dependency-resolver';
 import { ActionExecutor } from './action-executor';
 import { TemplateEngine } from './template-engine';
 import { ConditionEvaluator, EvaluationContext } from '../utils/condition-evaluator';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export interface WorkflowExecutionOptions {
   maxConcurrency?: number;

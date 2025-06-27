@@ -3,7 +3,7 @@ import { WorkflowEngine, ExecutionResult, WorkflowExecutionOptions } from '../en
 import { ExecutionHistory, ExecutionQuery, ExecutionAggregation } from '../engine/execution-history';
 import { workflowValidator } from '../utils/workflow-validator';
 import prisma from '../config/database';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 import { EventEmitter } from 'events';
 
 export interface WorkflowServiceOptions {
