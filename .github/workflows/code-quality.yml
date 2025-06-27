@@ -60,16 +60,30 @@ jobs:
           echo "✅ No console statements found"
         fi
         
-    - name: Analyze Errors with Claude
+    - name: Analyze Errors with Claude and Create Issues
       if: failure()
-      run: |
-        node .github/scripts/analyze-errors.js
-      env:
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        
-    - name: Create GitHub Issues for Errors
-      if: failure()
-      run: |
-        node .github/scripts/create-issues.js
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: anthropics/claude-github-action@v1
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        prompt: |
+          You are analyzing CI/CD errors for a TypeScript/Node.js project. The following errors occurred:
+          
+          TYPECHECK ERRORS:
+          $(cat typecheck.log 2>/dev/null || echo "No typecheck errors")
+          
+          LINT ERRORS:
+          $(cat lint.log 2>/dev/null || echo "No lint errors")
+          
+          TEST ERRORS:
+          $(cat test.log 2>/dev/null || echo "No test errors")
+          
+          Please create GitHub issues for these errors. For each category of errors:
+          1. Group related errors together
+          2. Provide root cause analysis
+          3. Give step-by-step fix instructions
+          4. Include code examples where helpful
+          5. Set appropriate priority (high for blocking errors)
+          
+          Create issues with descriptive titles like "Fix missing dependencies" or "Resolve TypeScript strict mode errors".
+        create-issues: true
+        issue-labels: bug,ci,automated
