@@ -8,9 +8,9 @@ export interface ExecutionSnapshot {
   workflowName: string;
   status: 'running' | 'completed' | 'failed' | 'cancelled' | 'timeout';
   startTime: Date;
-  endTime?: Date;
-  duration?: number;
-  currentAction?: string;
+  endTime?: Date | undefined;
+  duration?: number | undefined;
+  currentAction?: string | undefined;
   progress: {
     completed: number;
     failed: number;
@@ -20,7 +20,7 @@ export interface ExecutionSnapshot {
   };
   context: ExecutionContext;
   actionResults: ActionResult[];
-  error?: string;
+  error?: string | undefined;
   metrics?: any;
 }
 
@@ -132,7 +132,7 @@ export class ExecutionHistory {
     snapshot.endTime = result.endTime;
     snapshot.duration = result.duration;
     snapshot.actionResults = result.actionResults;
-    snapshot.error = result.error;
+    snapshot.error = result.error || undefined;
     snapshot.metrics = result.metrics;
 
     // Calculate final progress
@@ -156,7 +156,7 @@ export class ExecutionHistory {
             actionResults: result.actionResults,
             metrics: result.metrics
           },
-          error: result.error
+          error: result.error || null
         }
       });
 
@@ -201,7 +201,7 @@ export class ExecutionHistory {
     const existingIndex = snapshot.actionResults.findIndex(r => r.actionId === actionId);
     const actionResult: ActionResult = {
       actionId,
-      actionType: '', // Will be filled from workflow definition
+      actionType: 'audit_log', // Placeholder, will be filled from workflow definition
       status,
       startTime: new Date().toISOString(),
       endTime: status !== 'running' ? new Date().toISOString() : undefined,
@@ -357,8 +357,8 @@ export class ExecutionHistory {
           ...whereClause,
           completedAt: { not: null }
         },
-        _avg: {
-          startedAt: true
+        _count: {
+          id: true
         }
       });
 
@@ -560,7 +560,7 @@ export class ExecutionHistory {
       status: dbExecution.status.toLowerCase(),
       startTime: dbExecution.startedAt,
       endTime: dbExecution.completedAt,
-      duration,
+      duration: duration || 0,
       progress: dbExecution.executionSteps?.progress || {
         completed: 0,
         failed: 0,

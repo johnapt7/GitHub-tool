@@ -11,11 +11,11 @@ interface Environment {
   RATE_LIMIT_MAX_REQUESTS: number;
   
   // GitHub App Configuration
-  GITHUB_APP_ID?: number;
-  GITHUB_PRIVATE_KEY?: string;
-  GITHUB_WEBHOOK_SECRET?: string;
-  GITHUB_CLIENT_ID?: string;
-  GITHUB_CLIENT_SECRET?: string;
+  GITHUB_APP_ID?: number | undefined;
+  GITHUB_PRIVATE_KEY?: string | undefined;
+  GITHUB_WEBHOOK_SECRET?: string | undefined;
+  GITHUB_CLIENT_ID?: string | undefined;
+  GITHUB_CLIENT_SECRET?: string | undefined;
   
   // GitHub App Features
   GITHUB_TOKEN_CACHE_TTL: number;

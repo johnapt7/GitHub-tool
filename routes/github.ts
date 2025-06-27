@@ -7,8 +7,8 @@ import logger from '../utils/logger';
 const router = Router();
 
 // Initialize GitHub Auth Service (this would typically be done in a factory or DI container)
-let githubAuth: GitHubAuthService;
-let githubAuthMiddleware: GitHubAuthMiddleware;
+let githubAuth: GitHubAuthService | undefined;
+let githubAuthMiddleware: GitHubAuthMiddleware | undefined;
 
 // Initialize GitHub services
 export const initializeGitHubServices = (authService: GitHubAuthService, middleware: GitHubAuthMiddleware): void => {

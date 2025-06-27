@@ -470,10 +470,10 @@ export class WorkflowService extends EventEmitter {
       where: { id: workflow.name },
       update: {
         name: workflow.name,
-        description: workflow.description,
+        description: workflow.description || null,
         enabled: workflow.enabled !== false,
         triggerConfig: workflow.trigger,
-        conditions: workflow.conditions,
+        conditions: workflow.conditions || null,
         actions: workflow.actions,
         metadata: {
           version: workflow.version,
@@ -487,10 +487,10 @@ export class WorkflowService extends EventEmitter {
       create: {
         id: workflow.name,
         name: workflow.name,
-        description: workflow.description,
+        description: workflow.description || null,
         enabled: workflow.enabled !== false,
         triggerConfig: workflow.trigger,
-        conditions: workflow.conditions,
+        conditions: workflow.conditions || null,
         actions: workflow.actions,
         metadata: {
           version: workflow.version,
@@ -546,7 +546,7 @@ export class WorkflowService extends EventEmitter {
       }, 0);
       const averageDuration = completedExecutions.length > 0 ? totalDuration / completedExecutions.length : 0;
 
-      const lastExecuted = executions.length > 0 ? executions[0].startedAt : undefined;
+      const lastExecuted = executions.length > 0 ? executions[0]?.startedAt : undefined;
 
       return {
         totalExecutions,
