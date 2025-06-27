@@ -86,7 +86,7 @@ export abstract class BaseIntegrationAdapter {
       
       this.credentials = {
         accessToken: refreshResponse.accessToken,
-        refreshToken: refreshResponse.refreshToken || this.credentials?.refreshToken,
+        refreshToken: refreshResponse.refreshToken || this.credentials?.refreshToken || '',
         expiresAt: refreshResponse.expiresIn ? 
           new Date(Date.now() + refreshResponse.expiresIn * 1000) : 
           this.credentials?.expiresAt,
@@ -98,7 +98,7 @@ export abstract class BaseIntegrationAdapter {
       
       logger.info('OAuth2 token refreshed successfully', {
         integration: this.config.name,
-        expiresAt: this.credentials.expiresAt
+        expiresAt: this.credentials?.expiresAt
       });
     } catch (error) {
       logger.error('Failed to refresh OAuth2 token', {
@@ -107,7 +107,7 @@ export abstract class BaseIntegrationAdapter {
       });
       
       // Clear credentials to force re-authentication
-      this.credentials = undefined;
+      delete this.credentials;
       throw this.createIntegrationError(error, { method: 'POST', url: 'token_refresh' });
     }
   }
@@ -272,7 +272,7 @@ export abstract class BaseIntegrationAdapter {
       return integrationError;
     }
 
-    const newError: IntegrationError = new Error(`${baseMessage}: ${String(error)}`);
+    const newError = new Error(`${baseMessage}: ${String(error)}`) as IntegrationError;
     newError.code = 'UNKNOWN_ERROR';
     newError.context = {
       integration: this.config.name,
@@ -317,7 +317,7 @@ export abstract class BaseIntegrationAdapter {
 
   async disconnect(): Promise<void> {
     logger.info('Disconnecting integration adapter', { integration: this.config.name });
-    this.credentials = undefined;
-    this.rateLimitInfo = undefined;
+    delete this.credentials;
+    delete this.rateLimitInfo;
   }
 }

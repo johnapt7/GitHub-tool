@@ -108,7 +108,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
       
       return result;
     } finally {
-      this.tokenRefreshPromise = undefined;
+      delete this.tokenRefreshPromise;
     }
   }
 
@@ -183,12 +183,17 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
         hasBody: !!context.body
       });
 
-      const response = await fetch(context.url, {
+      const fetchOptions: RequestInit = {
         method: context.method,
         headers: context.headers,
-        body: context.body ? JSON.stringify(context.body) : undefined,
         signal: controller.signal
-      });
+      };
+      
+      if (context.body) {
+        fetchOptions.body = JSON.stringify(context.body);
+      }
+
+      const response = await fetch(context.url, fetchOptions);
 
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -281,7 +286,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
     return this.request<T>({
       method: 'GET',
       url: path,
-      headers
+      headers: headers || {}
     });
   }
 
@@ -294,7 +299,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
       method: 'POST',
       url: path,
       body,
-      headers
+      headers: headers || {}
     });
   }
 
@@ -307,7 +312,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
       method: 'PUT',
       url: path,
       body,
-      headers
+      headers: headers || {}
     });
   }
 
@@ -320,7 +325,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
       method: 'PATCH',
       url: path,
       body,
-      headers
+      headers: headers || {}
     });
   }
 
@@ -328,7 +333,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
     return this.request<T>({
       method: 'DELETE',
       url: path,
-      headers
+      headers: headers || {}
     });
   }
 
@@ -367,7 +372,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     } finally {
-      this.credentials = undefined;
+      delete this.credentials;
     }
   }
 }

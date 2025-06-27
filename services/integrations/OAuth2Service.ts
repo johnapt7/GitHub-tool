@@ -85,15 +85,27 @@ export class OAuth2Service {
 
       const credentials = this.parseTokenResponse(response);
 
-      return {
-        accessToken: credentials.accessToken,
-        refreshToken: credentials.refreshToken,
-        expiresIn: credentials.expiresAt ? 
-          Math.floor((credentials.expiresAt.getTime() - Date.now()) / 1000) : 
-          undefined,
-        tokenType: credentials.tokenType,
-        scope: credentials.scope
+      const response: TokenRefreshResponse = {
+        accessToken: credentials.accessToken
       };
+      
+      if (credentials.refreshToken !== undefined) {
+        response.refreshToken = credentials.refreshToken;
+      }
+      
+      if (credentials.expiresAt) {
+        response.expiresIn = Math.floor((credentials.expiresAt.getTime() - Date.now()) / 1000);
+      }
+      
+      if (credentials.tokenType !== undefined) {
+        response.tokenType = credentials.tokenType;
+      }
+      
+      if (credentials.scope !== undefined) {
+        response.scope = credentials.scope;
+      }
+      
+      return response;
     } catch (error) {
       logger.error('Failed to refresh access token', {
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -249,23 +261,36 @@ export class OAuth2Service {
       new Date(Date.now() + response.expires_in * 1000) : 
       undefined;
 
-    return {
+    const credentials: OAuth2Credentials = {
       accessToken: response.access_token,
-      refreshToken: response.refresh_token,
-      expiresAt,
-      tokenType: response.token_type || 'Bearer',
-      scope: response.scope
+      tokenType: response.token_type || 'Bearer'
     };
+    
+    if (response.refresh_token !== undefined) {
+      credentials.refreshToken = response.refresh_token;
+    }
+    
+    if (expiresAt !== undefined) {
+      credentials.expiresAt = expiresAt;
+    }
+    
+    if (response.scope !== undefined) {
+      credentials.scope = response.scope;
+    }
+    
+    return credentials;
   }
 
   private createOAuth2Error(error: unknown, context: string): IntegrationError {
     const message = error instanceof Error ? error.message : String(error);
     
-    const oauthError: IntegrationError = new Error(`OAuth2 ${context} failed: ${message}`);
+    const oauthError = new Error(`OAuth2 ${context} failed: ${message}`) as IntegrationError;
     oauthError.code = `OAUTH2_${context.toUpperCase()}_ERROR`;
     oauthError.isRetryable = false; // OAuth2 errors are typically not retryable
     oauthError.context = { context };
-    oauthError.originalError = error instanceof Error ? error : undefined;
+    if (error instanceof Error) {
+      oauthError.originalError = error;
+    }
 
     // Determine if this is a client error vs server error
     if (message.includes('invalid_client') || 

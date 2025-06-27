@@ -405,8 +405,8 @@ export class RetryManager {
       recommendations.push('High average retry delays - consider optimizing backoff strategies');
     }
 
-    if (commonFailurePatterns.length > 0 && commonFailurePatterns[0].count > allRetries.length * 0.5) {
-      recommendations.push(`Dominant error type '${commonFailurePatterns[0].error}' - focus on preventing this error`);
+    if (commonFailurePatterns.length > 0 && commonFailurePatterns[0]!.count > allRetries.length * 0.5) {
+      recommendations.push(`Dominant error type '${commonFailurePatterns[0]!.error}' - focus on preventing this error`);
     }
 
     return {

@@ -476,11 +476,11 @@ export class WorkflowService extends EventEmitter {
         conditions: workflow.conditions || null,
         actions: workflow.actions,
         metadata: {
-          version: workflow.version,
-          errorHandling: workflow.errorHandling,
-          timeout: workflow.timeout,
-          retryPolicy: workflow.retryPolicy,
-          ...workflow.metadata
+          ...(workflow.version && { version: workflow.version }),
+          ...(workflow.errorHandling && { errorHandling: workflow.errorHandling }),
+          ...(workflow.timeout && { timeout: workflow.timeout }),
+          ...(workflow.retryPolicy && { retryPolicy: workflow.retryPolicy }),
+          ...(workflow.metadata || {})
         },
         updatedAt: new Date()
       },
@@ -493,11 +493,11 @@ export class WorkflowService extends EventEmitter {
         conditions: workflow.conditions || null,
         actions: workflow.actions,
         metadata: {
-          version: workflow.version,
-          errorHandling: workflow.errorHandling,
-          timeout: workflow.timeout,
-          retryPolicy: workflow.retryPolicy,
-          ...workflow.metadata
+          ...(workflow.version && { version: workflow.version }),
+          ...(workflow.errorHandling && { errorHandling: workflow.errorHandling }),
+          ...(workflow.timeout && { timeout: workflow.timeout }),
+          ...(workflow.retryPolicy && { retryPolicy: workflow.retryPolicy }),
+          ...(workflow.metadata || {})
         },
         createdBy: 'system', // Would be actual user in production
         createdAt: new Date(),

@@ -13,7 +13,7 @@ export interface GitHubWebhookRequest extends Request {
   // Ensure Express Request properties are available
   body: any;
   params: any;
-  ip: string;
+  ip?: string;
 }
 
 export class GitHubAuthMiddleware {
@@ -53,8 +53,8 @@ export class GitHubAuthMiddleware {
   // Middleware to parse GitHub webhook headers and payload
   parseWebhookHeaders = (req: GitHubWebhookRequest, res: Response, next: NextFunction): void => {
     try {
-      req.githubEvent = req.get('X-GitHub-Event');
-      req.githubDelivery = req.get('X-GitHub-Delivery');
+      req.githubEvent = req.get('X-GitHub-Event') || '';
+      req.githubDelivery = req.get('X-GitHub-Delivery') || '';
       req.githubPayload = req.body;
 
       // Extract installation ID from payload if available

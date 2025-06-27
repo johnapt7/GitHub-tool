@@ -123,7 +123,7 @@ export class WorkflowEngine extends EventEmitter {
         endTime,
         duration,
         actionResults: result.actionResults,
-        error: result.error,
+        error: 'error' in result ? result.error : undefined,
         metrics: this.options.enableMetrics ? this.calculateMetrics(result.actionResults, duration) : undefined
       };
 
@@ -216,7 +216,7 @@ export class WorkflowEngine extends EventEmitter {
       return {
         status,
         actionResults,
-        error: hasFailures ? 'One or more actions failed' : undefined
+        ...(hasFailures && { error: 'One or more actions failed' })
       };
 
     } catch (error) {
@@ -273,7 +273,7 @@ export class WorkflowEngine extends EventEmitter {
           stageResults.push(result.value);
         } else {
           // Create failed result for rejected promise
-          const action = actions.filter(a => a.runAsync)[index];
+          const action = actions.filter(a => a.runAsync)[index]!;
           stageResults.push({
             actionId: action.id || `action-${index}`,
             actionType: action.type,
@@ -394,14 +394,16 @@ export class WorkflowEngine extends EventEmitter {
         }
       }
 
-      // Update execution history
-      await this.executionHistory.updateActionStatus(
-        context.execution.id,
-        actionId,
-        result.status,
-        result.result,
-        result.error
-      );
+      // Update execution history (only for final states)
+      if (result.status !== 'pending') {
+        await this.executionHistory.updateActionStatus(
+          context.execution.id,
+          actionId,
+          result.status as 'running' | 'completed' | 'failed' | 'skipped',
+          result.result,
+          result.error
+        );
+      }
 
       return result;
 

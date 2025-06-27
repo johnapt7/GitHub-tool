@@ -66,6 +66,7 @@ export interface GitHubWebhookHeaders {
   'x-hub-signature-256': string;
   'user-agent': string;
   'content-type': string;
+  [key: string]: string; // Index signature for compatibility with Record<string, string>
 }
 
 export interface GitHubWebhookEvent {
