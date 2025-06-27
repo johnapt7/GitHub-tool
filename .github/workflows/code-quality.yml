@@ -101,7 +101,7 @@ jobs:
       continue-on-error: true
         
     - name: Create Error Summary Issue
-      if: steps.typecheck.outputs.typecheck_status == 'failed' || steps.lint.outputs.lint_status == 'failed' || steps.test.outputs.test_status == 'failed' || steps.console_check.outputs.console_status == 'failed'
+      if: always()  # Always run this step to check for errors
       run: |
         # Create a comprehensive error summary
         echo "# CI/CD Pipeline Errors - $(date)" > error_summary.md
@@ -111,12 +111,16 @@ jobs:
         echo "**Branch**: ${{ github.ref_name }}" >> error_summary.md
         echo "" >> error_summary.md
         
+        # Check if there are any errors to report
+        HAS_ERRORS=false
+        
         # TypeScript Errors
         echo "## 🔴 TypeScript Errors" >> error_summary.md
-        if [[ "${{ steps.typecheck.outputs.typecheck_status }}" == "failed" ]]; then
+        if [ -s typecheck.log ] && grep -q "error TS" typecheck.log; then
           echo '```typescript' >> error_summary.md
-          cat typecheck.log 2>/dev/null || echo "Error: Could not read typecheck.log" >> error_summary.md
+          cat typecheck.log >> error_summary.md
           echo '```' >> error_summary.md
+          HAS_ERRORS=true
         else
           echo "✅ No TypeScript errors" >> error_summary.md
         fi
@@ -124,10 +128,11 @@ jobs:
         
         # ESLint Errors  
         echo "## 🔴 ESLint Errors" >> error_summary.md
-        if [[ "${{ steps.lint.outputs.lint_status }}" == "failed" ]]; then
+        if [ -s lint.log ] && grep -q -E "(error|Error)" lint.log; then
           echo '```javascript' >> error_summary.md
-          cat lint.log 2>/dev/null || echo "Error: Could not read lint.log" >> error_summary.md
+          cat lint.log >> error_summary.md
           echo '```' >> error_summary.md
+          HAS_ERRORS=true
         else
           echo "✅ No ESLint errors" >> error_summary.md
         fi
@@ -135,10 +140,11 @@ jobs:
         
         # Test Errors
         echo "## 🔴 Test Results" >> error_summary.md
-        if [[ "${{ steps.test.outputs.test_status }}" == "failed" ]]; then
+        if [ -s test.log ] && grep -q -E "(FAIL|failed)" test.log; then
           echo '```bash' >> error_summary.md
-          cat test.log 2>/dev/null || echo "Error: Could not read test.log" >> error_summary.md
+          cat test.log >> error_summary.md
           echo '```' >> error_summary.md
+          HAS_ERRORS=true
         else
           echo "✅ All tests passing" >> error_summary.md
         fi
@@ -146,54 +152,67 @@ jobs:
         
         # Console Statements
         echo "## 🔴 Console Statements Found" >> error_summary.md
-        if [[ "${{ steps.console_check.outputs.console_status }}" == "failed" ]]; then
+        if [ -s console.log ] && [ "$(wc -l < console.log)" -gt 1 ]; then
           echo '```bash' >> error_summary.md
-          cat console.log 2>/dev/null || echo "Error: Could not read console.log" >> error_summary.md
+          cat console.log >> error_summary.md
           echo '```' >> error_summary.md
+          HAS_ERRORS=true
         else
           echo "✅ No console statements found" >> error_summary.md
         fi
         echo "" >> error_summary.md
         
-        # Summary and Actions
-        echo "## 📋 Summary" >> error_summary.md
-        echo "This issue was automatically created by the CI/CD pipeline when errors were detected." >> error_summary.md
-        echo "" >> error_summary.md
-        echo "### 🚀 Suggested Actions:" >> error_summary.md
-        echo "" >> error_summary.md
-        if [[ "${{ steps.typecheck.outputs.typecheck_status }}" == "failed" ]]; then
-          echo "#### TypeScript Errors:" >> error_summary.md
-          echo "- Install missing dependencies: \`npm install express @types/express dotenv winston @octokit/rest @octokit/auth-app jsonwebtoken helmet cors express-rate-limit node-cache @prisma/extension-accelerate ajv-formats\`" >> error_summary.md
-          echo "- Fix strict mode type issues with optional properties" >> error_summary.md
-          echo "- Update logger imports to use default export: \`import logger from '../utils/logger'\`" >> error_summary.md
+        # Only create issue if there are actual errors
+        if [ "$HAS_ERRORS" = "true" ]; then
+          # Summary and Actions
+          echo "## 📋 Summary" >> error_summary.md
+          echo "This issue was automatically created by the CI/CD pipeline when errors were detected." >> error_summary.md
           echo "" >> error_summary.md
-        fi
-        if [[ "${{ steps.lint.outputs.lint_status }}" == "failed" ]]; then
-          echo "#### ESLint Configuration:" >> error_summary.md
-          echo "- Install missing ESLint packages: \`npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser\`" >> error_summary.md
-          echo "- Run \`npm run lint:fix\` to auto-fix style issues" >> error_summary.md
+          echo "### 🚀 Suggested Actions:" >> error_summary.md
           echo "" >> error_summary.md
+          
+          # Check what types of errors we have and provide specific guidance
+          if grep -q "error TS" typecheck.log 2>/dev/null; then
+            echo "#### TypeScript Errors:" >> error_summary.md
+            echo "- Install missing dependencies: \`npm install express @types/express dotenv winston @octokit/rest @octokit/auth-app jsonwebtoken helmet cors express-rate-limit node-cache @prisma/extension-accelerate ajv-formats\`" >> error_summary.md
+            echo "- Fix strict mode type issues with optional properties" >> error_summary.md
+            echo "- Update logger imports to use default export: \`import logger from '../utils/logger'\`" >> error_summary.md
+            echo "" >> error_summary.md
+          fi
+          
+          if grep -q -E "(error|Error)" lint.log 2>/dev/null; then
+            echo "#### ESLint Configuration:" >> error_summary.md
+            echo "- Install missing ESLint packages: \`npm install --save-dev @typescript-eslint/eslint-plugin @typescript-eslint/parser\`" >> error_summary.md
+            echo "- Run \`npm run lint:fix\` to auto-fix style issues" >> error_summary.md
+            echo "" >> error_summary.md
+          fi
+          
+          if [ -s console.log ] && [ "$(wc -l < console.log)" -gt 1 ]; then
+            echo "#### Console Statements:" >> error_summary.md
+            echo "- Replace console.log/error/warn with proper logger usage" >> error_summary.md
+            echo "- Consider using a structured logging approach" >> error_summary.md
+            echo "" >> error_summary.md
+          fi
+          
+          if grep -q -E "(FAIL|failed)" test.log 2>/dev/null; then
+            echo "#### Test Failures:" >> error_summary.md
+            echo "- Debug and fix failing test cases" >> error_summary.md
+            echo "- Check test environment setup" >> error_summary.md
+            echo "" >> error_summary.md
+          fi
+          
+          echo "---" >> error_summary.md
+          echo "*This issue was automatically generated by the CI/CD error detection pipeline*" >> error_summary.md
+          
+          # Create GitHub issue with the summary
+          gh issue create \
+            --title "🚨 CI/CD Pipeline Failure - $(date +%Y-%m-%d %H:%M UTC)" \
+            --body-file error_summary.md \
+            --label "bug"
+            
+          echo "✅ Created GitHub issue with error details"
+        else
+          echo "✅ No errors detected - skipping issue creation"
         fi
-        if [[ "${{ steps.console_check.outputs.console_status }}" == "failed" ]]; then
-          echo "#### Console Statements:" >> error_summary.md
-          echo "- Replace console.log/error/warn with proper logger usage" >> error_summary.md
-          echo "- Consider using a structured logging approach" >> error_summary.md
-          echo "" >> error_summary.md
-        fi
-        if [[ "${{ steps.test.outputs.test_status }}" == "failed" ]]; then
-          echo "#### Test Failures:" >> error_summary.md
-          echo "- Debug and fix failing test cases" >> error_summary.md
-          echo "- Check test environment setup" >> error_summary.md
-          echo "" >> error_summary.md
-        fi
-        
-        echo "---" >> error_summary.md
-        echo "*This issue was automatically generated by the CI/CD error detection pipeline*" >> error_summary.md
-        
-        # Create GitHub issue with the summary
-        gh issue create \
-          --title "🚨 CI/CD Pipeline Failure - $(date +%Y-%m-%d %H:%M UTC)" \
-          --body-file error_summary.md \
-          --label "bug"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
