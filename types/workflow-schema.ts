@@ -31,7 +31,10 @@ export type GitHubEvent =
   | 'pull_request.opened' | 'pull_request.closed' | 'pull_request.merged'
   | 'pull_request.review_requested' | 'pull_request.synchronize'
   | 'push' | 'release.published' | 'workflow_run.completed'
-  | 'check_suite.completed' | 'deployment_status' | 'repository.created';
+  | 'check_suite.completed' | 'deployment_status' | 'repository.created'
+  | 'repository_vulnerability_alert' | 'schedule.weekly'
+  // Demo/Manual event types for testing
+  | 'manual' | 'test_retry' | 'deployment' | 'error_test';
 
 export interface ScheduleConfig {
   cron: string;
@@ -80,7 +83,7 @@ export type ActionType =
   | 'github_issue_assign' | 'github_issue_unassign' | 'github_issue_label'
   | 'github_issue_comment' | 'github_issue_close' | 'github_issue_reopen'
   | 'github_pr_assign' | 'github_pr_request_review' | 'github_pr_merge'
-  | 'github_pr_comment' | 'github_pr_approve' | 'github_pr_close'
+  | 'github_pr_comment' | 'github_pr_approve' | 'github_pr_close' | 'github_pr_label'
   | 'github_create_branch' | 'github_create_pr' | 'github_create_issue'
   
   // Communication Actions
