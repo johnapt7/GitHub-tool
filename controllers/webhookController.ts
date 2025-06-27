@@ -3,6 +3,7 @@ import { isSignatureValid } from '../utils/webhookSecurity';
 import { deduplicationService } from '../services/deduplicationService';
 import { eventQueue } from '../services/eventQueue';
 import { GitHubWebhookEvent, GitHubWebhookHeaders } from '../types/github';
+import logger from '../utils/logger';
 
 export class WebhookController {
   private readonly webhookSecret: string;
@@ -11,7 +12,7 @@ export class WebhookController {
     this.webhookSecret = webhookSecret || process.env.GITHUB_WEBHOOK_SECRET || '';
     
     if (!this.webhookSecret) {
-      console.warn('Warning: No webhook secret configured. Webhook signature validation will fail.');
+      logger.warn('No webhook secret configured. Webhook signature validation will fail.');
     }
   }
 
@@ -40,7 +41,7 @@ export class WebhookController {
 
       // Validate webhook signature
       if (this.webhookSecret && !isSignatureValid(rawBody, signature, this.webhookSecret)) {
-        console.error('Webhook signature validation failed', {
+        logger.error('Webhook signature validation failed', {
           deliveryId,
           eventType,
           hasSignature: !!signature,
@@ -52,7 +53,7 @@ export class WebhookController {
 
       // Check for duplicate delivery
       if (deduplicationService.isDuplicate(rawBody, deliveryId)) {
-        console.log('Duplicate webhook delivery detected', {
+        logger.info('Duplicate webhook delivery detected', {
           deliveryId,
           eventType
         });
@@ -84,7 +85,7 @@ export class WebhookController {
         deliveryId
       );
 
-      console.log('Webhook event queued successfully', {
+      logger.info('Webhook event queued successfully', {
         deliveryId,
         eventType,
         queueSize: eventQueue.getQueueSize()
@@ -99,10 +100,10 @@ export class WebhookController {
       });
 
     } catch (error) {
-      console.error('Error processing webhook:', error);
+      logger.error('Error processing webhook', { error: error instanceof Error ? error.message : error });
       
       // Log error details for debugging
-      console.error('Webhook error details:', {
+      logger.error('Webhook error details', {
         deliveryId: req.headers['x-github-delivery'],
         eventType: req.headers['x-github-event'],
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -127,7 +128,7 @@ export class WebhookController {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Error getting webhook stats:', error);
+      logger.error('Error getting webhook stats', { error: error instanceof Error ? error.message : error });
       res.status(500).json({ error: 'Failed to get webhook stats' });
     }
   }
@@ -143,7 +144,7 @@ export class WebhookController {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Error in webhook health check:', error);
+      logger.error('Error in webhook health check', { error: error instanceof Error ? error.message : error });
       res.status(503).json({ 
         status: 'unhealthy',
         error: 'Health check failed',

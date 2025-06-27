@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import logger from '../utils/logger';
 
 export interface QueuedEvent {
   id: string;
@@ -145,7 +146,7 @@ export class EventQueue extends EventEmitter {
 export class GitHubEventProcessor implements EventProcessor {
   async process(event: QueuedEvent): Promise<void> {
     // Default implementation - log the event
-    console.log(`Processing GitHub webhook: ${event.eventType}`, {
+    logger.info(`Processing GitHub webhook: ${event.eventType}`, {
       deliveryId: event.deliveryId,
       timestamp: new Date(event.timestamp).toISOString(),
       retryCount: event.retryCount
@@ -176,24 +177,24 @@ export class GitHubEventProcessor implements EventProcessor {
         await this.handleReleaseEvent(event);
         break;
       default:
-        console.log(`No specific handler for event type: ${event.eventType}`);
+        logger.info(`No specific handler for event type: ${event.eventType}`);
     }
   }
 
   private async handlePushEvent(event: QueuedEvent): Promise<void> {
-    console.log('Handling push event:', event.payload.ref);
+    logger.info('Handling push event:', event.payload.ref);
   }
 
   private async handlePullRequestEvent(event: QueuedEvent): Promise<void> {
-    console.log('Handling pull request event:', event.payload.action);
+    logger.info('Handling pull request event:', event.payload.action);
   }
 
   private async handleIssuesEvent(event: QueuedEvent): Promise<void> {
-    console.log('Handling issues event:', event.payload.action);
+    logger.info('Handling issues event:', event.payload.action);
   }
 
   private async handleReleaseEvent(event: QueuedEvent): Promise<void> {
-    console.log('Handling release event:', event.payload.action);
+    logger.info('Handling release event:', event.payload.action);
   }
 }
 
