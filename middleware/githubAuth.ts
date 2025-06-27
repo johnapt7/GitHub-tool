@@ -10,6 +10,10 @@ export interface GitHubWebhookRequest extends Request {
   githubDelivery?: string;
   installationId?: number;
   githubAuth?: GitHubAuthService;
+  // Ensure Express Request properties are available
+  body: any;
+  params: any;
+  ip: string;
 }
 
 export class GitHubAuthMiddleware {

@@ -1,9 +1,9 @@
 export interface GitHubAppConfig {
   appId: number;
   privateKey: string;
-  webhookSecret?: string;
-  clientId?: string;
-  clientSecret?: string;
+  webhookSecret?: string | undefined;
+  clientId?: string | undefined;
+  clientSecret?: string | undefined;
 }
 
 export interface InstallationToken {

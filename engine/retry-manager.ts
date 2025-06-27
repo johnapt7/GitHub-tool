@@ -1,5 +1,5 @@
 import { RetryPolicy, BackoffStrategy, ActionResult } from '../types/workflow-schema';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export interface RetryContext {
   actionId: string;
@@ -7,7 +7,7 @@ export interface RetryContext {
   executionId: string;
   attempt: number;
   maxAttempts: number;
-  lastError?: Error;
+  lastError?: Error | undefined;
   startTime: Date;
   totalRetryTime: number;
 }
@@ -405,7 +405,7 @@ export class RetryManager {
       recommendations.push('High average retry delays - consider optimizing backoff strategies');
     }
 
-    if (commonFailurePatterns[0]?.count > allRetries.length * 0.5) {
+    if (commonFailurePatterns.length > 0 && commonFailurePatterns[0].count > allRetries.length * 0.5) {
       recommendations.push(`Dominant error type '${commonFailurePatterns[0].error}' - focus on preventing this error`);
     }
 

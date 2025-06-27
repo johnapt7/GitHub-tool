@@ -14,13 +14,13 @@ import { DependencyResolver } from './dependency-resolver';
 import { ActionExecutor } from './action-executor';
 import { TemplateEngine } from './template-engine';
 import { ConditionEvaluator, EvaluationContext } from '../utils/condition-evaluator';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export interface WorkflowExecutionOptions {
-  maxConcurrency?: number;
-  defaultTimeout?: number;
-  enableMetrics?: boolean;
-  dryRun?: boolean;
+  maxConcurrency?: number | undefined;
+  defaultTimeout?: number | undefined;
+  enableMetrics?: boolean | undefined;
+  dryRun?: boolean | undefined;
 }
 
 export interface ExecutionResult {
@@ -31,8 +31,8 @@ export interface ExecutionResult {
   endTime: Date;
   duration: number;
   actionResults: ActionResult[];
-  error?: string;
-  metrics?: ExecutionMetrics;
+  error?: string | undefined;
+  metrics?: ExecutionMetrics | undefined;
 }
 
 export interface ExecutionMetrics {
@@ -176,7 +176,7 @@ export class WorkflowEngine extends EventEmitter {
   private async executeWorkflowActions(
     workflow: WorkflowDefinition,
     context: ExecutionContext
-  ): Promise<{ status: 'completed' | 'failed' | 'cancelled'; actionResults: ActionResult[]; error?: string }> {
+  ): Promise<{ status: 'completed' | 'failed' | 'cancelled' | 'timeout'; actionResults: ActionResult[]; error?: string }> {
     const actionResults: ActionResult[] = [];
     
     try {

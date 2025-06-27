@@ -1,5 +1,5 @@
 import { ExecutionContext } from '../types/workflow-schema';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 import { FieldResolver } from '../utils/field-resolver';
 
 export interface TemplateVariable {

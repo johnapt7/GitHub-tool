@@ -1,5 +1,5 @@
 import { ActionType, ExecutionContext } from '../types/workflow-schema';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export interface ActionExecutorResult {
   success: boolean;
