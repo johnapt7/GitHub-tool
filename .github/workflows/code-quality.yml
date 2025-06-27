@@ -95,6 +95,6 @@ jobs:
         gh issue create \
           --title "🚨 CI/CD Pipeline Failure - $(date +%Y-%m-%d)" \
           --body-file error_summary.md \
-          --label "bug,ci,automated,needs-triage"
+          --label "bug"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
