@@ -8,117 +8,56 @@ datasource db {
 }
 
 model Workflow {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  definition  Json     // Flexible JSON field for workflow configuration
-  status      WorkflowStatus @default(DRAFT)
-  version     Int      @default(1)
-  isActive    Boolean  @default(false)
-  
-  createdAt   DateTime @create @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   String?
-  updatedBy   String?
+  id            String   @id @default(uuid())
+  name          String   @db.VarChar(255)
+  description   String?
+  enabled       Boolean  @default(true)
+  triggerConfig Json     @map("trigger_config") @db.JsonB
+  conditions    Json?    @db.JsonB
+  actions       Json     @db.JsonB
+  metadata      Json?    @db.JsonB
+  createdBy     String   @map("created_by") @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
   
   // Relations
-  executions  Execution[]
-  auditLogs   AuditLog[]
+  executions    Execution[]
+  auditLogs     AuditLog[]
   
-  // Indexes for performance
-  @@index([status])
-  @@index([isActive])
-  @@index([createdAt])
-  @@index([createdBy])
   @@map("workflows")
 }
 
 model Execution {
-  id           String          @id @default(cuid())
-  workflowId   String
-  status       ExecutionStatus @default(PENDING)
-  startedAt    DateTime?
-  completedAt  DateTime?
-  result       Json?           // Flexible JSON field for execution results
-  error        Json?           // JSON field for error details
-  context      Json?           // JSON field for execution context/variables
-  triggeredBy  String?
-  
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id             String    @id @default(uuid())
+  workflowId     String    @map("workflow_id")
+  status         String    @db.VarChar(50)
+  triggerEvent   Json      @map("trigger_event") @db.JsonB
+  executionSteps Json?     @map("execution_steps") @db.JsonB
+  startedAt      DateTime  @default(now()) @map("started_at")
+  completedAt    DateTime? @map("completed_at")
+  error          String?
   
   // Relations
-  workflow     Workflow        @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  auditLogs    AuditLog[]
+  workflow       Workflow  @relation(fields: [workflowId], references: [id])
+  auditLogs      AuditLog[]
   
-  // Indexes for performance
-  @@index([workflowId])
-  @@index([status])
-  @@index([startedAt])
-  @@index([completedAt])
-  @@index([createdAt])
-  @@index([triggeredBy])
   @@map("executions")
 }
 
 model AuditLog {
-  id           String     @id @default(cuid())
-  entityType   EntityType // WORKFLOW or EXECUTION
-  entityId     String     // workflowId or executionId
-  action       AuditAction
-  details      Json?      // Flexible JSON field for audit details
-  userId       String?    // User who performed the action
-  userAgent    String?
-  ipAddress    String?
+  id         String   @id @default(uuid())
+  entityType String   @map("entity_type") @db.VarChar(50)
+  entityId   String   @map("entity_id")
+  action     String   @db.VarChar(50)
+  userId     String?  @map("user_id") @db.VarChar(255)
+  changes    Json?    @db.JsonB
+  createdAt  DateTime @default(now()) @map("created_at")
   
-  createdAt    DateTime   @default(now())
+  // Relations (optional foreign keys)
+  workflow   Workflow? @relation(fields: [workflowId], references: [id])
+  execution  Execution? @relation(fields: [executionId], references: [id])
+  workflowId String?   @map("workflow_id")
+  executionId String?  @map("execution_id")
   
-  // Relations (optional foreign keys for referential integrity)
-  workflow     Workflow?  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
-  execution    Execution? @relation(fields: [executionId], references: [id], onDelete: Cascade)
-  workflowId   String?
-  executionId  String?
-  
-  // Indexes for performance and querying
-  @@index([entityType, entityId])
-  @@index([action])
-  @@index([userId])
-  @@index([createdAt])
-  @@index([workflowId])
-  @@index([executionId])
   @@map("audit_logs")
-}
-
-// Enums
-enum WorkflowStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-  DEPRECATED
-}
-
-enum ExecutionStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-  CANCELLED
-  TIMEOUT
-}
-
-enum EntityType {
-  WORKFLOW
-  EXECUTION
-}
-
-enum AuditAction {
-  CREATED
-  UPDATED
-  DELETED
-  EXECUTED
-  CANCELLED
-  PUBLISHED
-  ARCHIVED
-  STATUS_CHANGED
-  PERMISSION_CHANGED
 }
