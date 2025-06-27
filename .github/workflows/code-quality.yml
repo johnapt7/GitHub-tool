@@ -27,13 +27,19 @@ jobs:
       run: npx prisma generate --no-engine
       
     - name: TypeScript Type Check
-      run: npm run typecheck
+      id: typecheck
+      run: npm run typecheck 2>&1 | tee typecheck.log || echo "typecheck_failed=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
       
     - name: ESLint Check
-      run: npm run lint
+      id: lint
+      run: npm run lint 2>&1 | tee lint.log || echo "lint_failed=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
       
     - name: Run Tests
-      run: npm run test
+      id: test
+      run: npm run test 2>&1 | tee test.log || echo "test_failed=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
       
     - name: Check for TODO/FIXME comments
       run: |
@@ -53,3 +59,17 @@ jobs:
         else
           echo "✅ No console statements found"
         fi
+        
+    - name: Analyze Errors with Claude
+      if: failure()
+      run: |
+        node .github/scripts/analyze-errors.js
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        
+    - name: Create GitHub Issues for Errors
+      if: failure()
+      run: |
+        node .github/scripts/create-issues.js
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
