@@ -12,6 +12,7 @@ import {
   SlackIntegrationAdapter,
   integrationManager
 } from '../services/integrations';
+import logger from '../utils/logger';
 
 // Example 1: Basic HTTP Integration with OAuth2
 async function createGenericOAuth2Integration() {
@@ -38,6 +39,7 @@ async function createGenericOAuth2Integration() {
 
   // Get authorization URL for user to visit
   const authUrl = integrationManager.getAuthorizationUrl('google-api', 'random-state-123');
+  logger.info('Visit this URL to authorize:', authUrl);
   console.log('Visit this URL to authorize:', authUrl);
 
   // After user authorizes and we get the code, authenticate
@@ -52,28 +54,41 @@ async function createGenericOAuth2Integration() {
       url: '/oauth2/v2/userinfo'
     });
     
+    logger.info('User info:', userInfo.data);
     console.log('User info:', userInfo.data);
   } catch (error) {
+    logger.error('Failed to get user info:', error);
     console.error('Failed to get user info:', error);
   }
 }
 
 // Example 2: Slack Integration with Bot Token
 async function createSlackBotIntegration() {
-  const slackBot = SlackIntegrationAdapter.createWithBotToken(
-    process.env.SLACK_BOT_TOKEN!
-  );
+  const slackConfig: IntegrationConfig = {
+    id: 'slack-bot',
+    name: 'Slack Bot Token',
+    apiKey: process.env.SLACK_BOT_TOKEN!,
+    retryConfig: {
+      maxRetries: 3,
+      backoffMultiplier: 2,
+      maxBackoffDelay: 30000
+    }
+  };
+
+  const slackBot = new SlackIntegrationAdapter(slackConfig);
 
   // Register with integration manager
-  integrationManager.register(slackBot.config, slackBot);
+  integrationManager.register(slackConfig, slackBot);
 
   try {
     // Test authentication
     const authTest = await slackBot.testAuth();
+    logger.info('Slack bot authenticated:', authTest.name);
     console.log('Slack bot authenticated:', authTest.name);
 
     // Get channels
     const channels = await slackBot.getChannels();
+    logger.info('Available channels:', channels.map(c => c.name));
     console.log('Available channels:', channels.map(c => c.name));
 
     // Send a message
@@ -83,25 +98,41 @@ async function createSlackBotIntegration() {
       { username: 'Integration Bot', iconEmoji: ':robot_face:' }
     );
     
+    logger.info('Message sent:', result);
     console.log('Message sent:', result);
 
   } catch (error) {
+    logger.error('Slack integration error:', error);
     console.error('Slack integration error:', error);
   }
 }
 
 // Example 3: Slack Integration with OAuth2
 async function createSlackOAuth2Integration() {
-  const slackOAuth = SlackIntegrationAdapter.createWithOAuth2(
-    process.env.SLACK_CLIENT_ID!,
-    process.env.SLACK_CLIENT_SECRET!,
-    ['chat:write', 'channels:read', 'users:read']
-  );
+  const slackOAuthConfig: IntegrationConfig = {
+    id: 'slack-oauth2',
+    name: 'Slack OAuth2',
+    oauth2: {
+      clientId: process.env.SLACK_CLIENT_ID!,
+      clientSecret: process.env.SLACK_CLIENT_SECRET!,
+      authorizationUrl: 'https://slack.com/oauth/v2/authorize',
+      tokenUrl: 'https://slack.com/api/oauth.v2.access',
+      scope: ['chat:write', 'channels:read', 'users:read'].join(',')
+    },
+    retryConfig: {
+      maxRetries: 3,
+      backoffMultiplier: 2,
+      maxBackoffDelay: 30000
+    }
+  };
 
-  integrationManager.register(slackOAuth.config, slackOAuth);
+  const slackOAuth = new SlackIntegrationAdapter(slackOAuthConfig);
+
+  integrationManager.register(slackOAuthConfig, slackOAuth);
 
   // Get authorization URL
   const authUrl = integrationManager.getAuthorizationUrl('slack-oauth2', 'slack-state-456');
+  logger.info('Slack OAuth2 URL:', authUrl);
   console.log('Slack OAuth2 URL:', authUrl);
 
   // After OAuth2 flow completion:
@@ -115,7 +146,7 @@ class CustomApiAdapter extends HttpIntegrationAdapter {
       id: 'custom-api',
       name: 'Custom API',
       baseUrl: 'https://api.example.com',
-      apiKey: process.env.CUSTOM_API_KEY,
+      apiKey: process.env.CUSTOM_API_KEY!,
       headers: {
         'X-API-Version': '2023-01-01'
       }
@@ -138,6 +169,22 @@ async function monitorIntegrationsHealth() {
   const healthStatus = await integrationManager.getHealthStatus();
   
   healthStatus.forEach(status => {
+    logger.info(`Integration: ${status.name}`);
+    logger.info(`  Healthy: ${status.isHealthy}`);
+    logger.info(`  Authenticated: ${status.isAuthenticated}`);
+    logger.info(`  Total Requests: ${status.metrics.totalRequests}`);
+    logger.info(`  Success Rate: ${
+      status.metrics.totalRequests > 0 
+        ? (status.metrics.successfulRequests / status.metrics.totalRequests * 100).toFixed(2)
+        : 0
+    }%`);
+    
+    if (status.rateLimitInfo?.isLimited) {
+      logger.info(`  Rate Limited until: ${status.rateLimitInfo.resetTime}`);
+    }
+    
+    logger.info('---');
+    
     console.log(`Integration: ${status.name}`);
     console.log(`  Healthy: ${status.isHealthy}`);
     console.log(`  Authenticated: ${status.isAuthenticated}`);
@@ -157,6 +204,7 @@ async function monitorIntegrationsHealth() {
 
   // Get aggregated metrics
   const aggregatedMetrics = integrationManager.getAggregatedMetrics();
+  logger.info('Aggregated Metrics:', aggregatedMetrics);
   console.log('Aggregated Metrics:', aggregatedMetrics);
 }
 
@@ -172,12 +220,19 @@ async function demonstrateErrorHandling() {
     });
   } catch (error) {
     // The error will be automatically categorized and enhanced
+    logger.info('Error caught:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any).code,
+      category: (error as any).category,
+      isRetryable: (error as any).isRetryable,
+      statusCode: (error as any).statusCode
+    });
     console.log('Error caught:', {
-      message: error.message,
-      code: error.code,
-      category: error.category,
-      isRetryable: error.isRetryable,
-      statusCode: error.statusCode
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any).code,
+      category: (error as any).category,
+      isRetryable: (error as any).isRetryable,
+      statusCode: (error as any).statusCode
     });
   }
 }
@@ -186,6 +241,7 @@ async function demonstrateErrorHandling() {
 async function integrationsManagementExample() {
   // List all registered integrations
   const integrationIds = integrationManager.list();
+  logger.info('Registered integrations:', integrationIds);
   console.log('Registered integrations:', integrationIds);
 
   // Update configuration
@@ -200,6 +256,7 @@ async function integrationsManagementExample() {
 
   // Check health of specific integration
   const googleHealth = await integrationManager.getIntegrationHealth('google-api');
+  logger.info('Google API Health:', googleHealth);
   console.log('Google API Health:', googleHealth);
 
   // Cleanup (usually called during app shutdown)
@@ -209,10 +266,17 @@ async function integrationsManagementExample() {
 // Example usage
 async function runExamples() {
   try {
+    logger.info('=== Integration Framework Examples ===\n');
     console.log('=== Integration Framework Examples ===\n');
 
     // Only run examples that don't require actual API keys
     await monitorIntegrationsHealth();
+    
+    logger.info('\n=== Framework successfully demonstrated! ===');
+    logger.info('To use with real APIs:');
+    logger.info('1. Set environment variables for API credentials');
+    logger.info('2. Uncomment the actual API calls');
+    logger.info('3. Handle OAuth2 callback flows in your web routes');
     
     console.log('\n=== Framework successfully demonstrated! ===');
     console.log('To use with real APIs:');
@@ -221,6 +285,7 @@ async function runExamples() {
     console.log('3. Handle OAuth2 callback flows in your web routes');
     
   } catch (error) {
+    logger.error('Example error:', error);
     console.error('Example error:', error);
   }
 }
@@ -239,5 +304,8 @@ export {
 
 // Run examples if this file is executed directly
 if (require.main === module) {
-  runExamples().catch(console.error);
+  runExamples().catch((error) => {
+    logger.error('Failed to run examples:', error);
+    console.error(error);
+  });
 }

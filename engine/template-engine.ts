@@ -120,7 +120,7 @@ export class TemplateEngine {
 
     try {
       while ((match = this.templateRegex.exec(template)) !== null) {
-        const expression = match[1].trim();
+        const expression = match[1]!.trim();
         
         // Check for valid expression syntax
         if (!this.isValidExpression(expression)) {
@@ -249,14 +249,14 @@ export class TemplateEngine {
     }
 
     const [, helperName, argsString] = helperMatch;
-    const helper = this.helperFunctions.get(helperName);
+    const helper = this.helperFunctions.get(helperName!);
     
     if (!helper) {
       throw new Error(`Unknown helper function: ${helperName}`);
     }
 
     // Parse arguments (simplified - in production would need proper parser)
-    const args = this.parseHelperArguments(argsString, context);
+    const args = this.parseHelperArguments(argsString!, context);
     
     return helper(...args);
   }
@@ -348,7 +348,7 @@ export class TemplateEngine {
       
       let match;
       while ((match = this.templateRegex.exec(value)) !== null) {
-        const expression = match[1].trim();
+        const expression = match[1]!.trim();
         if (!variables.some(v => v.name === expression)) {
           variables.push({
             name: expression,

@@ -135,11 +135,17 @@ export class IntegrationErrorHandler {
     originalError?: Error,
     context?: Record<string, any>
   ): IntegrationError {
-    const error: IntegrationError = new Error(message);
+    const error = new Error(message) as IntegrationError;
     error.code = code;
-    error.statusCode = statusCode;
-    error.originalError = originalError;
-    error.context = context;
+    if (statusCode !== undefined) {
+      error.statusCode = statusCode;
+    }
+    if (originalError !== undefined) {
+      error.originalError = originalError;
+    }
+    if (context !== undefined) {
+      error.context = context;
+    }
 
     // Determine if error is retryable based on patterns
     const category = this.categorizeError(error);
@@ -212,7 +218,7 @@ export class IntegrationErrorHandler {
         return true;
         
       default:
-        return error.isRetryable !== false;
+        return error.isRetryable === true;
     }
   }
 
@@ -355,8 +361,9 @@ export class IntegrationErrorHandler {
     
     // Try to parse from error message
     const match = error.message.match(/retry.?after:?\s*(\d+)/i);
-    if (match) {
-      return parseInt(match[1], 10);
+    if (match && match[1]) {
+      const parsed = parseInt(match[1], 10);
+      return isNaN(parsed) ? null : parsed;
     }
     
     return null;

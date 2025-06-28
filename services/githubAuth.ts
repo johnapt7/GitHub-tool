@@ -68,7 +68,7 @@ export class GitHubAuthService {
       const token: InstallationToken = {
         token: response.data.token,
         expiresAt: new Date(response.data.expires_at),
-        permissions: response.data.permissions,
+        permissions: response.data.permissions || {},
         repositorySelection: response.data.repository_selection as 'all' | 'selected',
       };
 
@@ -137,9 +137,9 @@ export class GitHubAuthService {
       return {
         id: response.data.id,
         account: {
-          login: response.data.account.login,
-          id: response.data.account.id,
-          type: response.data.account.type as 'User' | 'Organization',
+          login: response.data.account?.login || '',
+          id: response.data.account?.id || 0,
+          type: (response.data.account?.type as 'User' | 'Organization') || 'User',
         },
         repositorySelection: response.data.repository_selection as 'all' | 'selected',
         permissions: response.data.permissions,
@@ -162,9 +162,9 @@ export class GitHubAuthService {
       return response.data.map(installation => ({
         id: installation.id,
         account: {
-          login: installation.account.login,
-          id: installation.account.id,
-          type: installation.account.type as 'User' | 'Organization',
+          login: installation.account?.login || '',
+          id: installation.account?.id || 0,
+          type: (installation.account?.type as 'User' | 'Organization') || 'User',
         },
         repositorySelection: installation.repository_selection as 'all' | 'selected',
         permissions: installation.permissions,
@@ -253,7 +253,7 @@ export class GitHubAuthService {
     // Intercept responses to track rate limits
     this.octokit.hook.after('request', (response) => {
       const resource = this.determineResource(response.url);
-      this.rateLimitTracker.updateRateLimit(resource, response.headers);
+      this.rateLimitTracker.updateRateLimit(resource, response.headers as Record<string, string>);
     });
   }
 

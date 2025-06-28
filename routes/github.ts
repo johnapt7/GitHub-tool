@@ -16,8 +16,32 @@ export const initializeGitHubServices = (authService: GitHubAuthService, middlew
   githubAuthMiddleware = middleware;
 };
 
+// Middleware wrapper to ensure GitHub services are initialized
+const requireGitHubAuth = (req: GitHubWebhookRequest, res: Response, next: any) => {
+  if (!githubAuthMiddleware) {
+    return res.status(500).json({ error: 'GitHub services not initialized' });
+  }
+  return githubAuthMiddleware.attachGitHubAuth(req, res, next);
+};
+
+// Middleware wrapper for installation access
+const requireInstallationAccess = (paramName: string) => (req: GitHubWebhookRequest, res: Response, next: any) => {
+  if (!githubAuthMiddleware) {
+    return res.status(500).json({ error: 'GitHub services not initialized' });
+  }
+  return githubAuthMiddleware.requireInstallationAccess(paramName)(req, res, next);
+};
+
+// Webhook middleware wrapper
+const getWebhookMiddleware = () => {
+  if (!githubAuthMiddleware) {
+    return [(req: any, res: any, next: any) => res.status(500).json({ error: 'GitHub services not initialized' })];
+  }
+  return githubAuthMiddleware.webhookHandler();
+};
+
 // GitHub App information endpoint
-router.get('/app/info', githubAuthMiddleware?.attachGitHubAuth, async (req: GitHubWebhookRequest, res: Response): Promise<void> => {
+router.get('/app/info', requireGitHubAuth, async (req: GitHubWebhookRequest, res: Response): Promise<void> => {
   try {
     if (!req.githubAuth) {
       throw createError('GitHub authentication not available', 500);
@@ -52,7 +76,7 @@ router.get('/app/info', githubAuthMiddleware?.attachGitHubAuth, async (req: GitH
 
 // Get specific installation info
 router.get('/installations/:installationId', 
-  githubAuthMiddleware?.requireInstallationAccess('installationId'), 
+  requireInstallationAccess('installationId'), 
   async (req: GitHubWebhookRequest, res: Response): Promise<void> => {
     try {
       if (!req.githubAuth || !req.installationId) {
@@ -86,7 +110,7 @@ router.get('/installations/:installationId',
 
 // Refresh installation token
 router.post('/installations/:installationId/refresh-token',
-  githubAuthMiddleware?.requireInstallationAccess('installationId'),
+  requireInstallationAccess('installationId'),
   async (req: GitHubWebhookRequest, res: Response): Promise<void> => {
     try {
       if (!req.githubAuth || !req.installationId) {
@@ -119,7 +143,7 @@ router.post('/installations/:installationId/refresh-token',
 
 // Revoke installation token
 router.delete('/installations/:installationId/token',
-  githubAuthMiddleware?.requireInstallationAccess('installationId'),
+  requireInstallationAccess('installationId'),
   async (req: GitHubWebhookRequest, res: Response): Promise<void> => {
     try {
       if (!req.githubAuth || !req.installationId) {
@@ -144,7 +168,7 @@ router.delete('/installations/:installationId/token',
 
 // GitHub webhook endpoint
 router.post('/webhooks',
-  ...githubAuthMiddleware?.webhookHandler() || [],
+  ...getWebhookMiddleware(),
   async (req: GitHubWebhookRequest, res: Response): Promise<void> => {
     try {
       const { githubEvent, githubDelivery, githubPayload, installationId } = req;
@@ -191,7 +215,7 @@ router.post('/webhooks',
 );
 
 // Rate limit status endpoint
-router.get('/rate-limits', githubAuthMiddleware?.attachGitHubAuth, (req: GitHubWebhookRequest, res: Response): void => {
+router.get('/rate-limits', requireGitHubAuth, (req: GitHubWebhookRequest, res: Response): void => {
   if (!req.githubAuth) {
     throw createError('GitHub authentication not available', 500);
   }
@@ -218,7 +242,7 @@ router.get('/rate-limits', githubAuthMiddleware?.attachGitHubAuth, (req: GitHubW
 });
 
 // Cache management endpoints
-router.get('/cache/stats', githubAuthMiddleware?.attachGitHubAuth, (req: GitHubWebhookRequest, res: Response): void => {
+router.get('/cache/stats', requireGitHubAuth, (req: GitHubWebhookRequest, res: Response): void => {
   if (!req.githubAuth) {
     throw createError('GitHub authentication not available', 500);
   }
@@ -236,7 +260,7 @@ router.get('/cache/stats', githubAuthMiddleware?.attachGitHubAuth, (req: GitHubW
   });
 });
 
-router.delete('/cache', githubAuthMiddleware?.attachGitHubAuth, (req: GitHubWebhookRequest, res: Response): void => {
+router.delete('/cache', requireGitHubAuth, (req: GitHubWebhookRequest, res: Response): void => {
   if (!req.githubAuth) {
     throw createError('GitHub authentication not available', 500);
   }

@@ -199,12 +199,13 @@ export class ExecutionHistory {
 
     // Update or add action result
     const existingIndex = snapshot.actionResults.findIndex(r => r.actionId === actionId);
+    const endTime = status !== 'running' ? new Date().toISOString() : undefined;
     const actionResult: ActionResult = {
       actionId,
       actionType: 'audit_log', // Placeholder, will be filled from workflow definition
       status,
       startTime: new Date().toISOString(),
-      endTime: status !== 'running' ? new Date().toISOString() : undefined,
+      ...(endTime && { endTime }),
       result,
       error,
       retryCount: 0

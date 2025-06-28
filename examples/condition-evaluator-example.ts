@@ -1,7 +1,9 @@
 import { ConditionEvaluator } from '../utils/condition-evaluator';
 import { ConditionGroup } from '../types/workflow-schema';
+import logger from '../utils/logger';
 
 // Example: GitHub workflow automation conditions
+logger.info('=== GitHub Workflow Automation Condition Examples ===\n');
 console.log('=== GitHub Workflow Automation Condition Examples ===\n');
 
 // Example 1: Auto-assign PR reviewers based on complex conditions
@@ -37,6 +39,11 @@ const prContext = {
     }
   }
 };
+
+logger.info('1. PR Auto-reviewer Assignment:');
+logger.info('   Condition: PR opened, not draft, AND (targeting main with 100+ additions OR has needs-review label)');
+logger.info('   Result:', ConditionEvaluator.evaluate(prReviewerCondition, prContext));
+logger.info('');
 
 console.log('1. PR Auto-reviewer Assignment:');
 console.log('   Condition: PR opened, not draft, AND (targeting main with 100+ additions OR has needs-review label)');
@@ -79,6 +86,11 @@ const issueContext = {
   }
 };
 
+logger.info('2. Issue Auto-triage:');
+logger.info('   Condition: Issue opened AND (title matches bug pattern OR has reproduction steps OR from external user)');
+logger.info('   Result:', ConditionEvaluator.evaluate(issueTriageCondition, issueContext));
+logger.info('');
+
 console.log('2. Issue Auto-triage:');
 console.log('   Condition: Issue opened AND (title matches bug pattern OR has reproduction steps OR from external user)');
 console.log('   Result:', ConditionEvaluator.evaluate(issueTriageCondition, issueContext));
@@ -119,6 +131,11 @@ const deploymentContext = {
   }
 };
 
+logger.info('3. Deployment Auto-approval:');
+logger.info('   Condition: Valid version tag AND tests pass AND coverage >= 80% AND (2+ approvals OR tech-lead approved) AND no critical vulnerabilities');
+logger.info('   Result:', ConditionEvaluator.evaluate(deploymentCondition, deploymentContext));
+logger.info('');
+
 console.log('3. Deployment Auto-approval:');
 console.log('   Condition: Valid version tag AND tests pass AND coverage >= 80% AND (2+ approvals OR tech-lead approved) AND no critical vulnerabilities');
 console.log('   Result:', ConditionEvaluator.evaluate(deploymentCondition, deploymentContext));
@@ -154,6 +171,11 @@ const notificationContext = {
     release: { prerelease: true }
   }
 };
+
+logger.info('4. Cross-team Notification:');
+logger.info('   Condition: (Critical service PR merged) OR (Security issue opened) OR (Production release)');
+logger.info('   Result:', ConditionEvaluator.evaluate(notificationCondition, notificationContext));
+logger.info('');
 
 console.log('4. Cross-team Notification:');
 console.log('   Condition: (Critical service PR merged) OR (Security issue opened) OR (Production release)');
@@ -207,9 +229,15 @@ const baContext = {
   }
 };
 
+logger.info('5. Business Analyst Escalation Workflow:');
+logger.info('   Condition: Business hours AND not holiday AND (high issue volume with slow resolution OR SLA breaches)');
+logger.info('   Result:', ConditionEvaluator.evaluate(baWorkflowCondition, baContext));
+logger.info('');
+
 console.log('5. Business Analyst Escalation Workflow:');
 console.log('   Condition: Business hours AND not holiday AND (high issue volume with slow resolution OR SLA breaches)');
 console.log('   Result:', ConditionEvaluator.evaluate(baWorkflowCondition, baContext));
 console.log();
 
+logger.info('=== Demonstration Complete ===');
 console.log('=== Demonstration Complete ===');

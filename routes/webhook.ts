@@ -10,7 +10,7 @@ router.use('/webhook', (req, res, next) => {
   if (!req.body || typeof req.body !== 'object') {
     return res.status(400).json({ error: 'Invalid request body' });
   }
-  next();
+  return next();
 });
 
 // GitHub webhook endpoint

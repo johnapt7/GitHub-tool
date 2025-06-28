@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import Ajv, { ValidateFunction } from 'ajv';
 import addFormats from 'ajv-formats';
 import {
   WorkflowDefinition,
@@ -13,7 +13,7 @@ import {
 
 export class WorkflowValidator {
   private ajv: Ajv;
-  private validateSchema: any;
+  private validateSchema: ValidateFunction;
 
   constructor() {
     this.ajv = new Ajv({ allErrors: true, verbose: true });
@@ -31,7 +31,7 @@ export class WorkflowValidator {
     // Schema validation
     const isValid = this.validateSchema(workflow);
     if (!isValid && this.validateSchema.errors) {
-      errors.push(...this.validateSchema.errors.map(err => ({
+      errors.push(...this.validateSchema.errors.map((err) => ({
         path: err.instancePath || 'root',
         message: err.message || 'Schema validation failed',
         code: err.keyword || 'SCHEMA_ERROR'

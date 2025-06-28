@@ -373,16 +373,26 @@ export class IntegrationManager {
     );
 
     return allMetrics.reduce(
-      (acc, metrics) => ({
-        totalRequests: acc.totalRequests + metrics.totalRequests,
-        successfulRequests: acc.successfulRequests + metrics.successfulRequests,
-        failedRequests: acc.failedRequests + metrics.failedRequests,
-        averageResponseTime: (acc.averageResponseTime + metrics.averageResponseTime) / 2,
-        tokenRefreshCount: acc.tokenRefreshCount + metrics.tokenRefreshCount,
-        lastRequestTime: !acc.lastRequestTime || 
-          (metrics.lastRequestTime && metrics.lastRequestTime > acc.lastRequestTime) ?
-          metrics.lastRequestTime : acc.lastRequestTime
-      }),
+      (acc, metrics) => {
+        const aggregated: IntegrationMetrics = {
+          totalRequests: acc.totalRequests + metrics.totalRequests,
+          successfulRequests: acc.successfulRequests + metrics.successfulRequests,
+          failedRequests: acc.failedRequests + metrics.failedRequests,
+          averageResponseTime: (acc.averageResponseTime + metrics.averageResponseTime) / 2,
+          tokenRefreshCount: acc.tokenRefreshCount + metrics.tokenRefreshCount
+        };
+        
+        // Handle optional lastRequestTime properly
+        if (!acc.lastRequestTime) {
+          aggregated.lastRequestTime = metrics.lastRequestTime;
+        } else if (metrics.lastRequestTime && metrics.lastRequestTime > acc.lastRequestTime) {
+          aggregated.lastRequestTime = metrics.lastRequestTime;
+        } else {
+          aggregated.lastRequestTime = acc.lastRequestTime;
+        }
+        
+        return aggregated;
+      },
       {
         totalRequests: 0,
         successfulRequests: 0,
