@@ -40,7 +40,6 @@ async function createGenericOAuth2Integration() {
   // Get authorization URL for user to visit
   const authUrl = integrationManager.getAuthorizationUrl('google-api', 'random-state-123');
   logger.info('Visit this URL to authorize:', authUrl);
-  console.log('Visit this URL to authorize:', authUrl);
 
   // After user authorizes and we get the code, authenticate
   // integrationManager.authenticateWithCode('google-api', 'authorization-code-from-callback');
@@ -55,10 +54,8 @@ async function createGenericOAuth2Integration() {
     });
     
     logger.info('User info:', userInfo.data);
-    console.log('User info:', userInfo.data);
   } catch (error) {
     logger.error('Failed to get user info:', error);
-    console.error('Failed to get user info:', error);
   }
 }
 
@@ -67,6 +64,7 @@ async function createSlackBotIntegration() {
   const slackConfig: IntegrationConfig = {
     id: 'slack-bot',
     name: 'Slack Bot Token',
+    baseUrl: 'https://slack.com/api',
     apiKey: process.env.SLACK_BOT_TOKEN!,
     retryConfig: {
       maxRetries: 3,
@@ -84,12 +82,10 @@ async function createSlackBotIntegration() {
     // Test authentication
     const authTest = await slackBot.testAuth();
     logger.info('Slack bot authenticated:', authTest.name);
-    console.log('Slack bot authenticated:', authTest.name);
 
     // Get channels
     const channels = await slackBot.getChannels();
     logger.info('Available channels:', channels.map(c => c.name));
-    console.log('Available channels:', channels.map(c => c.name));
 
     // Send a message
     const result = await slackBot.sendFormattedMessage(
@@ -99,11 +95,9 @@ async function createSlackBotIntegration() {
     );
     
     logger.info('Message sent:', result);
-    console.log('Message sent:', result);
 
   } catch (error) {
     logger.error('Slack integration error:', error);
-    console.error('Slack integration error:', error);
   }
 }
 
@@ -112,6 +106,7 @@ async function createSlackOAuth2Integration() {
   const slackOAuthConfig: IntegrationConfig = {
     id: 'slack-oauth2',
     name: 'Slack OAuth2',
+    baseUrl: 'https://slack.com/api',
     oauth2: {
       clientId: process.env.SLACK_CLIENT_ID!,
       clientSecret: process.env.SLACK_CLIENT_SECRET!,
@@ -133,7 +128,6 @@ async function createSlackOAuth2Integration() {
   // Get authorization URL
   const authUrl = integrationManager.getAuthorizationUrl('slack-oauth2', 'slack-state-456');
   logger.info('Slack OAuth2 URL:', authUrl);
-  console.log('Slack OAuth2 URL:', authUrl);
 
   // After OAuth2 flow completion:
   // await integrationManager.authenticateWithCode('slack-oauth2', 'oauth-code-from-slack');
@@ -185,27 +179,26 @@ async function monitorIntegrationsHealth() {
     
     logger.info('---');
     
-    console.log(`Integration: ${status.name}`);
-    console.log(`  Healthy: ${status.isHealthy}`);
-    console.log(`  Authenticated: ${status.isAuthenticated}`);
-    console.log(`  Total Requests: ${status.metrics.totalRequests}`);
-    console.log(`  Success Rate: ${
+    logger.info(`Integration: ${status.name}`);
+    logger.info(`  Healthy: ${status.isHealthy}`);
+    logger.info(`  Authenticated: ${status.isAuthenticated}`);
+    logger.info(`  Total Requests: ${status.metrics.totalRequests}`);
+    logger.info(`  Success Rate: ${
       status.metrics.totalRequests > 0 
         ? (status.metrics.successfulRequests / status.metrics.totalRequests * 100).toFixed(2)
         : 0
     }%`);
     
     if (status.rateLimitInfo?.isLimited) {
-      console.log(`  Rate Limited until: ${status.rateLimitInfo.resetTime}`);
+      logger.info(`  Rate Limited until: ${status.rateLimitInfo.resetTime}`);
     }
     
-    console.log('---');
+    logger.info('---');
   });
 
   // Get aggregated metrics
   const aggregatedMetrics = integrationManager.getAggregatedMetrics();
   logger.info('Aggregated Metrics:', aggregatedMetrics);
-  console.log('Aggregated Metrics:', aggregatedMetrics);
 }
 
 // Example 6: Error Handling Demonstration
@@ -227,7 +220,7 @@ async function demonstrateErrorHandling() {
       isRetryable: (error as any).isRetryable,
       statusCode: (error as any).statusCode
     });
-    console.log('Error caught:', {
+    logger.info('Error caught:', {
       message: error instanceof Error ? error.message : 'Unknown error',
       code: (error as any).code,
       category: (error as any).category,
@@ -242,7 +235,7 @@ async function integrationsManagementExample() {
   // List all registered integrations
   const integrationIds = integrationManager.list();
   logger.info('Registered integrations:', integrationIds);
-  console.log('Registered integrations:', integrationIds);
+  logger.info('Registered integrations:', integrationIds);
 
   // Update configuration
   integrationManager.updateConfig('google-api', {
@@ -257,7 +250,7 @@ async function integrationsManagementExample() {
   // Check health of specific integration
   const googleHealth = await integrationManager.getIntegrationHealth('google-api');
   logger.info('Google API Health:', googleHealth);
-  console.log('Google API Health:', googleHealth);
+  logger.info('Google API Health:', googleHealth);
 
   // Cleanup (usually called during app shutdown)
   // await integrationManager.cleanup();
@@ -267,7 +260,7 @@ async function integrationsManagementExample() {
 async function runExamples() {
   try {
     logger.info('=== Integration Framework Examples ===\n');
-    console.log('=== Integration Framework Examples ===\n');
+    logger.info('=== Integration Framework Examples ===\n');
 
     // Only run examples that don't require actual API keys
     await monitorIntegrationsHealth();
@@ -278,15 +271,15 @@ async function runExamples() {
     logger.info('2. Uncomment the actual API calls');
     logger.info('3. Handle OAuth2 callback flows in your web routes');
     
-    console.log('\n=== Framework successfully demonstrated! ===');
-    console.log('To use with real APIs:');
-    console.log('1. Set environment variables for API credentials');
-    console.log('2. Uncomment the actual API calls');
-    console.log('3. Handle OAuth2 callback flows in your web routes');
+    logger.info('\n=== Framework successfully demonstrated! ===');
+    logger.info('To use with real APIs:');
+    logger.info('1. Set environment variables for API credentials');
+    logger.info('2. Uncomment the actual API calls');
+    logger.info('3. Handle OAuth2 callback flows in your web routes');
     
   } catch (error) {
     logger.error('Example error:', error);
-    console.error('Example error:', error);
+    logger.error('Example error:', error);
   }
 }
 
@@ -306,6 +299,6 @@ export {
 if (require.main === module) {
   runExamples().catch((error) => {
     logger.error('Failed to run examples:', error);
-    console.error(error);
+    logger.error(error);
   });
 }

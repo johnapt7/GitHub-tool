@@ -185,7 +185,7 @@ export class HttpIntegrationAdapter extends BaseIntegrationAdapter {
 
       const fetchOptions: RequestInit = {
         method: context.method,
-        headers: context.headers,
+        headers: context.headers || {},
         signal: controller.signal
       };
       

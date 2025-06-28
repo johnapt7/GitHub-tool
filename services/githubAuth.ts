@@ -137,9 +137,9 @@ export class GitHubAuthService {
       return {
         id: response.data.id,
         account: {
-          login: response.data.account?.login || '',
+          login: ('login' in response.data.account) ? response.data.account.login : response.data.account.name || '',
           id: response.data.account?.id || 0,
-          type: (response.data.account?.type as 'User' | 'Organization') || 'User',
+          type: ('type' in response.data.account) ? (response.data.account.type as 'User' | 'Organization') : 'Organization',
         },
         repositorySelection: response.data.repository_selection as 'all' | 'selected',
         permissions: response.data.permissions,

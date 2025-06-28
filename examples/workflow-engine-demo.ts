@@ -25,7 +25,7 @@ export class WorkflowEngineDemo {
    */
   public async runDemo(): Promise<void> {
     logger.info('🚀 Starting Workflow Engine Demo\n');
-    console.log('🚀 Starting Workflow Engine Demo\n');
+    logger.info('🚀 Starting Workflow Engine Demo\n');
 
     try {
       // Step 1: Register workflows
@@ -50,11 +50,11 @@ export class WorkflowEngineDemo {
       await this.demonstrateErrorHandling();
 
       logger.info('\n✅ Demo completed successfully!');
-      console.log('\n✅ Demo completed successfully!');
+      logger.info('\n✅ Demo completed successfully!');
 
     } catch (error) {
       logger.error('❌ Demo failed:', error);
-      console.error('❌ Demo failed:', error);
+      logger.error('❌ Demo failed:', error);
     }
   }
 
@@ -63,7 +63,7 @@ export class WorkflowEngineDemo {
    */
   private async registerDemoWorkflows(): Promise<void> {
     logger.info('📋 Registering demo workflows...\n');
-    console.log('📋 Registering demo workflows...\n');
+    logger.info('📋 Registering demo workflows...\n');
 
     const workflows: WorkflowDefinition[] = [
       criticalIssueWorkflow,
@@ -78,15 +78,15 @@ export class WorkflowEngineDemo {
       try {
         await this.workflowService.registerWorkflow(workflow);
         logger.info(`✅ Registered: ${workflow.name}`);
-        console.log(`✅ Registered: ${workflow.name}`);
+        logger.info(`✅ Registered: ${workflow.name}`);
       } catch (error) {
         logger.error(`❌ Failed to register ${workflow.name}:`, error);
-        console.error(`❌ Failed to register ${workflow.name}:`, error);
+        logger.error(`❌ Failed to register ${workflow.name}:`, error);
       }
     }
 
     logger.info(`\n📊 Total workflows registered: ${this.workflowService.listWorkflows().length}\n`);
-    console.log(`\n📊 Total workflows registered: ${this.workflowService.listWorkflows().length}\n`);
+    logger.info(`\n📊 Total workflows registered: ${this.workflowService.listWorkflows().length}\n`);
   }
 
   /**
@@ -94,7 +94,7 @@ export class WorkflowEngineDemo {
    */
   private async demonstrateSimpleExecution(): Promise<void> {
     logger.info('🏃 Demonstrating Simple Workflow Execution\n');
-    console.log('🏃 Demonstrating Simple Workflow Execution\n');
+    logger.info('🏃 Demonstrating Simple Workflow Execution\n');
 
     const triggerEvent = {
       event: 'manual',
@@ -116,14 +116,14 @@ export class WorkflowEngineDemo {
       logger.info(`   Duration: ${result.duration}ms`);
       logger.info(`   Actions: ${result.actionResults.length}\n`);
       
-      console.log(`✅ Execution completed: ${result.executionId}`);
-      console.log(`   Status: ${result.status}`);
-      console.log(`   Duration: ${result.duration}ms`);
-      console.log(`   Actions: ${result.actionResults.length}\n`);
+      logger.info(`✅ Execution completed: ${result.executionId}`);
+      logger.info(`   Status: ${result.status}`);
+      logger.info(`   Duration: ${result.duration}ms`);
+      logger.info(`   Actions: ${result.actionResults.length}\n`);
 
     } catch (error) {
       logger.error('❌ Simple execution failed:', error);
-      console.error('❌ Simple execution failed:', error);
+      logger.error('❌ Simple execution failed:', error);
     }
   }
 
@@ -132,7 +132,7 @@ export class WorkflowEngineDemo {
    */
   private async demonstrateComplexWorkflow(): Promise<void> {
     logger.info('🔗 Demonstrating Complex Workflow with Dependencies\n');
-    console.log('🔗 Demonstrating Complex Workflow with Dependencies\n');
+    logger.info('🔗 Demonstrating Complex Workflow with Dependencies\n');
 
     const triggerEvent = {
       event: 'pull_request.opened',
@@ -173,20 +173,20 @@ export class WorkflowEngineDemo {
       }
       logger.info('');
       
-      console.log(`✅ Complex execution completed: ${result.executionId}`);
-      console.log(`   Status: ${result.status}`);
-      console.log(`   Duration: ${result.duration}ms`);
-      console.log(`   Actions executed: ${result.actionResults.length}`);
+      logger.info(`✅ Complex execution completed: ${result.executionId}`);
+      logger.info(`   Status: ${result.status}`);
+      logger.info(`   Duration: ${result.duration}ms`);
+      logger.info(`   Actions executed: ${result.actionResults.length}`);
       
       if (result.metrics) {
-        console.log(`   Success rate: ${((result.metrics.successfulActions / result.metrics.totalActions) * 100).toFixed(1)}%`);
-        console.log(`   Avg action duration: ${result.metrics.averageActionDuration.toFixed(0)}ms`);
+        logger.info(`   Success rate: ${((result.metrics.successfulActions / result.metrics.totalActions) * 100).toFixed(1)}%`);
+        logger.info(`   Avg action duration: ${result.metrics.averageActionDuration.toFixed(0)}ms`);
       }
-      console.log();
+      logger.info();
 
     } catch (error) {
       logger.error('❌ Complex execution failed:', error);
-      console.error('❌ Complex execution failed:', error);
+      logger.error('❌ Complex execution failed:', error);
     }
   }
 
@@ -195,7 +195,7 @@ export class WorkflowEngineDemo {
    */
   private async demonstrateRetryLogic(): Promise<void> {
     logger.info('🔄 Demonstrating Retry Logic with Exponential Backoff\n');
-    console.log('🔄 Demonstrating Retry Logic with Exponential Backoff\n');
+    logger.info('🔄 Demonstrating Retry Logic with Exponential Backoff\n');
 
     const triggerEvent = {
       event: 'test_retry',
@@ -223,20 +223,20 @@ export class WorkflowEngineDemo {
       });
       logger.info('');
       
-      console.log(`✅ Retry execution completed: ${result.executionId}`);
-      console.log(`   Status: ${result.status}`);
-      console.log(`   Total retries: ${result.metrics?.totalRetries || 0}`);
+      logger.info(`✅ Retry execution completed: ${result.executionId}`);
+      logger.info(`   Status: ${result.status}`);
+      logger.info(`   Total retries: ${result.metrics?.totalRetries || 0}`);
       
       result.actionResults.forEach((action, index) => {
         if (action.retryCount > 0) {
-          console.log(`   Action ${index + 1}: ${action.retryCount} retries`);
+          logger.info(`   Action ${index + 1}: ${action.retryCount} retries`);
         }
       });
-      console.log();
+      logger.info();
 
     } catch (error) {
       logger.error('❌ Retry demonstration failed:', error);
-      console.error('❌ Retry demonstration failed:', error);
+      logger.error('❌ Retry demonstration failed:', error);
     }
   }
 
@@ -245,7 +245,7 @@ export class WorkflowEngineDemo {
    */
   private async demonstrateParallelExecution(): Promise<void> {
     logger.info('⚡ Demonstrating Parallel Action Execution\n');
-    console.log('⚡ Demonstrating Parallel Action Execution\n');
+    logger.info('⚡ Demonstrating Parallel Action Execution\n');
 
     const triggerEvent = {
       event: 'deployment',
@@ -269,15 +269,15 @@ export class WorkflowEngineDemo {
       logger.info(`   Parallel efficiency demonstrated`);
       logger.info('');
       
-      console.log(`✅ Parallel execution completed: ${result.executionId}`);
-      console.log(`   Status: ${result.status}`);
-      console.log(`   Duration: ${result.duration}ms`);
-      console.log(`   Parallel efficiency demonstrated`);
-      console.log();
+      logger.info(`✅ Parallel execution completed: ${result.executionId}`);
+      logger.info(`   Status: ${result.status}`);
+      logger.info(`   Duration: ${result.duration}ms`);
+      logger.info(`   Parallel efficiency demonstrated`);
+      logger.info();
 
     } catch (error) {
       logger.error('❌ Parallel execution failed:', error);
-      console.error('❌ Parallel execution failed:', error);
+      logger.error('❌ Parallel execution failed:', error);
     }
   }
 
@@ -286,7 +286,7 @@ export class WorkflowEngineDemo {
    */
   private async demonstrateHistoryAndMetrics(): Promise<void> {
     logger.info('📊 Demonstrating Execution History and Metrics\n');
-    console.log('📊 Demonstrating Execution History and Metrics\n');
+    logger.info('📊 Demonstrating Execution History and Metrics\n');
 
     try {
       // Get recent executions
@@ -300,9 +300,9 @@ export class WorkflowEngineDemo {
         logger.info(`   ${index + 1}. ${exec.workflowName} - ${exec.status} (${exec.duration || 0}ms)`);
       });
       
-      console.log(`📈 Recent Executions (${executions.length}):`);
+      logger.info(`📈 Recent Executions (${executions.length}):`);
       executions.slice(0, 5).forEach((exec, index) => {
-        console.log(`   ${index + 1}. ${exec.workflowName} - ${exec.status} (${exec.duration || 0}ms)`);
+        logger.info(`   ${index + 1}. ${exec.workflowName} - ${exec.status} (${exec.duration || 0}ms)`);
       });
 
       // Get aggregated metrics
@@ -318,19 +318,19 @@ export class WorkflowEngineDemo {
       }
       logger.info('');
       
-      console.log(`\n📊 Overall Metrics:`);
-      console.log(`   Total executions: ${aggregation.totalExecutions}`);
-      console.log(`   Success rate: ${(aggregation.successRate * 100).toFixed(1)}%`);
-      console.log(`   Average duration: ${aggregation.averageDuration.toFixed(0)}ms`);
+      logger.info(`\n📊 Overall Metrics:`);
+      logger.info(`   Total executions: ${aggregation.totalExecutions}`);
+      logger.info(`   Success rate: ${(aggregation.successRate * 100).toFixed(1)}%`);
+      logger.info(`   Average duration: ${aggregation.averageDuration.toFixed(0)}ms`);
       
       if (aggregation.mostFrequentErrors.length > 0) {
-        console.log(`   Most common error: ${aggregation.mostFrequentErrors[0]!.error}`);
+        logger.info(`   Most common error: ${aggregation.mostFrequentErrors[0]!.error}`);
       }
-      console.log();
+      logger.info();
 
     } catch (error) {
       logger.error('❌ Failed to get history/metrics:', error);
-      console.error('❌ Failed to get history/metrics:', error);
+      logger.error('❌ Failed to get history/metrics:', error);
     }
   }
 
@@ -339,7 +339,7 @@ export class WorkflowEngineDemo {
    */
   private async demonstrateErrorHandling(): Promise<void> {
     logger.info('🛡️ Demonstrating Error Handling Strategies\n');
-    console.log('🛡️ Demonstrating Error Handling Strategies\n');
+    logger.info('🛡️ Demonstrating Error Handling Strategies\n');
 
     const triggerEvent = {
       event: 'error_test',
@@ -362,18 +362,18 @@ export class WorkflowEngineDemo {
       logger.info(`   Actions continued: ${result.actionResults.filter(a => a.status === 'completed').length}`);
       logger.info('');
       
-      console.log(`✅ Error handling execution completed: ${result.executionId}`);
-      console.log(`   Status: ${result.status}`);
-      console.log(`   Errors handled gracefully: ${result.actionResults.filter(a => a.status === 'failed').length}`);
-      console.log(`   Actions continued: ${result.actionResults.filter(a => a.status === 'completed').length}`);
-      console.log();
+      logger.info(`✅ Error handling execution completed: ${result.executionId}`);
+      logger.info(`   Status: ${result.status}`);
+      logger.info(`   Errors handled gracefully: ${result.actionResults.filter(a => a.status === 'failed').length}`);
+      logger.info(`   Actions continued: ${result.actionResults.filter(a => a.status === 'completed').length}`);
+      logger.info();
 
     } catch (error) {
       logger.info(`✅ Expected error handled: ${error instanceof Error ? error.message : error}`);
       logger.info(`   Error handling strategy worked correctly\n`);
       
-      console.log(`✅ Expected error handled: ${error instanceof Error ? error.message : error}`);
-      console.log(`   Error handling strategy worked correctly\n`);
+      logger.info(`✅ Expected error handled: ${error instanceof Error ? error.message : error}`);
+      logger.info(`   Error handling strategy worked correctly\n`);
     }
   }
 
@@ -602,22 +602,22 @@ export class WorkflowEngineDemo {
   private setupEventListeners(): void {
     this.workflowService.on('execution:started', (data) => {
       logger.info(`🏁 Execution started: ${data.executionId} (${data.workflow})`);
-      console.log(`🏁 Execution started: ${data.executionId} (${data.workflow})`);
+      logger.info(`🏁 Execution started: ${data.executionId} (${data.workflow})`);
     });
 
     this.workflowService.on('execution:completed', (data) => {
       logger.info(`✅ Execution completed: ${data.executionId} - ${data.status}`);
-      console.log(`✅ Execution completed: ${data.executionId} - ${data.status}`);
+      logger.info(`✅ Execution completed: ${data.executionId} - ${data.status}`);
     });
 
     this.workflowService.on('execution:failed', (data) => {
       logger.info(`❌ Execution failed: ${data.executionId}`);
-      console.log(`❌ Execution failed: ${data.executionId}`);
+      logger.info(`❌ Execution failed: ${data.executionId}`);
     });
 
     this.workflowService.on('workflow:registered', (data) => {
       // logger.info(`📋 Workflow registered: ${data.workflowName}`);
-      // console.log(`📋 Workflow registered: ${data.workflowName}`);
+      // logger.info(`📋 Workflow registered: ${data.workflowName}`);
     });
   }
 }
@@ -629,7 +629,7 @@ if (require.main === module) {
   const demo = new WorkflowEngineDemo();
   demo.runDemo().catch((error) => {
     logger.error('Failed to run workflow demo:', error);
-    console.error(error);
+    logger.error(error);
   });
 }
 

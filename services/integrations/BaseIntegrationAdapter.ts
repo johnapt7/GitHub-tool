@@ -89,7 +89,7 @@ export abstract class BaseIntegrationAdapter {
         refreshToken: refreshResponse.refreshToken || this.credentials?.refreshToken || '',
         expiresAt: refreshResponse.expiresIn ? 
           new Date(Date.now() + refreshResponse.expiresIn * 1000) : 
-          this.credentials?.expiresAt,
+          this.credentials?.expiresAt || undefined,
         tokenType: refreshResponse.tokenType || this.credentials?.tokenType || 'Bearer',
         scope: refreshResponse.scope || this.credentials?.scope
       };

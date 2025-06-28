@@ -473,7 +473,7 @@ export class WorkflowService extends EventEmitter {
         description: workflow.description || null,
         enabled: workflow.enabled !== false,
         triggerConfig: workflow.trigger,
-        conditions: workflow.conditions || null,
+        conditions: workflow.conditions || undefined,
         actions: workflow.actions,
         metadata: {
           ...(workflow.version && { version: workflow.version }),
@@ -490,7 +490,7 @@ export class WorkflowService extends EventEmitter {
         description: workflow.description || null,
         enabled: workflow.enabled !== false,
         triggerConfig: workflow.trigger,
-        conditions: workflow.conditions || null,
+        conditions: workflow.conditions || undefined,
         actions: workflow.actions,
         metadata: {
           ...(workflow.version && { version: workflow.version }),

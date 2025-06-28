@@ -12,7 +12,7 @@ import {
 } from '../types/workflow-schema';
 
 export class WorkflowValidator {
-  private ajv: Ajv;
+  private ajv: InstanceType<typeof Ajv>;
   private validateSchema: ValidateFunction;
 
   constructor() {
@@ -32,7 +32,7 @@ export class WorkflowValidator {
     const isValid = this.validateSchema(workflow);
     if (!isValid && this.validateSchema.errors) {
       errors.push(...this.validateSchema.errors.map((err) => ({
-        path: err.instancePath || 'root',
+        path: err.schemaPath || 'root',
         message: err.message || 'Schema validation failed',
         code: err.keyword || 'SCHEMA_ERROR'
       })));

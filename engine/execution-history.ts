@@ -207,7 +207,7 @@ export class ExecutionHistory {
       startTime: new Date().toISOString(),
       ...(endTime && { endTime }),
       result,
-      error,
+      ...(error && { error }),
       retryCount: 0
     };
 

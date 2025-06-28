@@ -76,36 +76,36 @@ export class OAuth2Service {
     try {
       logger.info('Refreshing access token');
 
-      const response = await this.makeTokenRequest({
+      const tokenResponse = await this.makeTokenRequest({
         grant_type: 'refresh_token',
         refresh_token: refreshToken,
         client_id: this.config.clientId,
         client_secret: this.config.clientSecret
       });
 
-      const credentials = this.parseTokenResponse(response);
+      const credentials = this.parseTokenResponse(tokenResponse);
 
-      const response: TokenRefreshResponse = {
+      const refreshResponse: TokenRefreshResponse = {
         accessToken: credentials.accessToken
       };
       
       if (credentials.refreshToken !== undefined) {
-        response.refreshToken = credentials.refreshToken;
+        refreshResponse.refreshToken = credentials.refreshToken;
       }
       
       if (credentials.expiresAt) {
-        response.expiresIn = Math.floor((credentials.expiresAt.getTime() - Date.now()) / 1000);
+        refreshResponse.expiresIn = Math.floor((credentials.expiresAt.getTime() - Date.now()) / 1000);
       }
       
       if (credentials.tokenType !== undefined) {
-        response.tokenType = credentials.tokenType;
+        refreshResponse.tokenType = credentials.tokenType;
       }
       
       if (credentials.scope !== undefined) {
-        response.scope = credentials.scope;
+        refreshResponse.scope = credentials.scope;
       }
       
-      return response;
+      return refreshResponse;
     } catch (error) {
       logger.error('Failed to refresh access token', {
         error: error instanceof Error ? error.message : 'Unknown error'
