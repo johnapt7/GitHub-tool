@@ -13,7 +13,7 @@ export interface GitHubWebhookRequest extends Request {
   // Ensure Express Request properties are available
   body: any;
   params: any;
-  ip?: string;
+  ip: string;
 }
 
 export class GitHubAuthMiddleware {

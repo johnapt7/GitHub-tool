@@ -300,6 +300,9 @@ export class IntegrationManager {
     const healthChecks = integrationIds.map(async (id) => {
       try {
         const integration = this.integrations[id];
+        if (!integration) {
+          throw new Error(`Integration not found: ${id}`);
+        }
         const adapter = integration.adapter;
         
         const isHealthy = adapter.isHealthy();
